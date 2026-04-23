@@ -13,9 +13,9 @@ The spiritual successor to [Let Me Google That For You](https://letmegooglethat.
 
 ## Demo
 
-**Create a link:** [yourname.github.io/lmgtfy](https://yourname.github.io/lmgtfy/)
+**Create a link:** [justusmueller-chain.github.io/lmgtfy](https://justusmueller-chain.github.io/lmgtfy/)
 
-**Example playback:** [yourname.github.io/lmgtfy/?q=how do I reset my password](https://yourname.github.io/lmgtfy/?q=how%20do%20I%20reset%20my%20password)
+**Example playback:** [justusmueller-chain.github.io/lmgtfy/?q=how do I reset my password](https://justusmueller-chain.github.io/lmgtfy/?q=how%20do%20I%20reset%20my%20password)
 
 ## Setup
 
