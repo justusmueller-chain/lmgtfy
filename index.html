@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let Me Glean That For You</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0f1117;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* --- CREATE MODE --- */
+  #create-mode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 2rem;
+  }
+
+  .logo {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe, #fd79a8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+  }
+
+  .tagline {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 2.5rem;
+    font-style: italic;
+  }
+
+  .create-box {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .create-box label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.6rem;
+  }
+
+  .create-box input[type="text"] {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    background: #12141c;
+    color: #fff;
+    font-size: 1.05rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .create-box input[type="text"]:focus {
+    border-color: #6c5ce7;
+  }
+
+  .create-btn {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+
+  .create-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(108,92,231,0.4);
+  }
+
+  .link-output {
+    margin-top: 1.5rem;
+    display: none;
+  }
+
+  .link-output .link-box {
+    display: flex;
+    gap: 8px;
+  }
+
+  .link-output input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #12141c;
+    color: #a29bfe;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+    outline: none;
+  }
+
+  .copy-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #2a2d3a;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .copy-btn:hover { background: #3a3d4a; }
+
+  .copied-toast {
+    color: #00b894;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* --- PLAYBACK MODE --- */
+  #playback-mode {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    width: 100%;
+    padding: 2rem;
+  }
+
+  .play-logo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    color: #555;
+    letter-spacing: -0.5px;
+  }
+
+  .play-logo span {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Fake Glean search bar */
+  .glean-container {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+  }
+
+  .glean-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background: #1a1d27;
+    border: 2px solid #2a2d3a;
+    border-radius: 14px;
+    padding: 16px 20px;
+    gap: 12px;
+    transition: border-color 0.3s;
+  }
+
+  .glean-bar.active {
+    border-color: #6c5ce7;
+  }
+
+  .glean-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .glean-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .glean-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.15rem;
+    font-family: inherit;
+    outline: none;
+    caret-color: #6c5ce7;
+  }
+
+  .glean-input::placeholder { color: #555; }
+
+  /* Fake cursor */
+  .fake-cursor {
+    display: none;
+    width: 2px;
+    height: 1.3em;
+    background: #6c5ce7;
+    animation: blink 1s step-end infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* Mouse pointer */
+  .mouse-pointer {
+    display: none;
+    position: fixed;
+    width: 24px;
+    height: 24px;
+    z-index: 9999;
+    pointer-events: none;
+    transition: none;
+    filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.5));
+  }
+
+  /* Snarky message */
+  .snark {
+    margin-top: 4rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.6s;
+    line-height: 1.4;
+  }
+
+  .snark em {
+    font-style: normal;
+    background: linear-gradient(135deg, #fd79a8, #e17055);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subsnark {
+    margin-top: 0.8rem;
+    font-size: 1rem;
+    color: #666;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.6s;
+  }
+
+  /* Confetti canvas */
+  #confetti {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 1rem;
+    font-size: 0.75rem;
+    color: #444;
+  }
+
+  .footer a { color: #6c5ce7; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- ====== CREATE MODE ====== -->
+<div id="create-mode">
+  <div class="logo">Let Me Glean That For You</div>
+  <div class="tagline">For all those questions that could've been a Glean search ✨</div>
+
+  <div class="create-box">
+    <label>What should they have searched for?</label>
+    <input type="text" id="query-input" placeholder='e.g. "How do I reset my password"' />
+    <button class="create-btn" onclick="generateLink()">Generate Passive-Aggressive Link 🔗</button>
+
+    <div class="link-output" id="link-output">
+      <div class="link-box">
+        <input type="text" id="link-value" readonly />
+        <button class="copy-btn" onclick="copyLink()">📋 Copy</button>
+      </div>
+      <div class="copied-toast" id="copied-toast">✓ Copied! Now go share the love.</div>
+    </div>
+  </div>
+
+  <div class="footer">A public service by people who believe in self-service 💜</div>
+</div>
+
+<!-- ====== PLAYBACK MODE ====== -->
+<div id="playback-mode">
+  <div class="play-logo">let me <span>glean</span> that for you...</div>
+
+  <div class="glean-container">
+    <div class="glean-bar" id="glean-bar">
+      <div class="glean-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+      <input class="glean-input" id="glean-input" placeholder="Search across everything..." readonly />
+      <div class="fake-cursor" id="fake-cursor"></div>
+    </div>
+  </div>
+
+  <div class="snark" id="snark">Was that <em>really</em> so hard?</div>
+  <div class="subsnark" id="subsnark">Next time, try searching before asking 😘<br><span id="redirect-msg"></span></div>
+
+  <div class="footer">
+    <a href="#" onclick="goHome(); return false;">Create your own →</a>
+  </div>
+</div>
+
+<!-- Mouse cursor SVG -->
+<svg class="mouse-pointer" id="mouse-pointer" viewBox="0 0 24 24">
+  <path d="M4 1 L4 18 L8.5 13.5 L13.5 22 L16 20.5 L11 12 L17 12 Z" fill="white" stroke="#333" stroke-width="1"/>
+</svg>
+
+<canvas id="confetti"></canvas>
+
+<script>
+// ---- Link generation ----
+const GLEAN_BASE_URL = 'https://app.glean.com/';
+const GLEAN_BE = 'https://chainalysis-prod-be.glean.com';
+
+function generateLink() {
+  const q = document.getElementById('query-input').value.trim();
+  if (!q) return;
+
+  const base = location.origin + location.pathname;
+  const url = base + '?q=' + encodeURIComponent(q);
+
+  document.getElementById('link-value').value = url;
+  document.getElementById('link-output').style.display = 'block';
+}
+
+function copyLink() {
+  const input = document.getElementById('link-value');
+  input.select();
+  navigator.clipboard.writeText(input.value);
+  const toast = document.getElementById('copied-toast');
+  toast.style.opacity = '1';
+  setTimeout(() => toast.style.opacity = '0', 2000);
+}
+
+function goHome() {
+  location.href = location.origin + location.pathname;
+}
+
+// ---- Playback ----
+function startPlayback(query) {
+  document.getElementById('create-mode').style.display = 'none';
+  document.getElementById('playback-mode').style.display = 'flex';
+
+  const bar = document.getElementById('glean-bar');
+  const input = document.getElementById('glean-input');
+  const cursor = document.getElementById('fake-cursor');
+  const pointer = document.getElementById('mouse-pointer');
+  const snark = document.getElementById('snark');
+  const subsnark = document.getElementById('subsnark');
+
+  // Phase 1: mouse moves to the search bar
+  pointer.style.display = 'block';
+  const barRect = bar.getBoundingClientRect();
+  const targetX = barRect.left + barRect.width / 2;
+  const targetY = barRect.top + barRect.height / 2;
+
+  // Start from bottom-right
+  let mx = window.innerWidth * 0.75;
+  let my = window.innerHeight * 0.8;
+  pointer.style.left = mx + 'px';
+  pointer.style.top = my + 'px';
+
+  const duration = 1200;
+  const startTime = performance.now();
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  function animateMouse(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const e = easeInOut(t);
+
+    pointer.style.left = (mx + (targetX - mx) * e) + 'px';
+    pointer.style.top = (my + (targetY - my) * e) + 'px';
+
+    if (t < 1) {
+      requestAnimationFrame(animateMouse);
+    } else {
+      // Phase 2: "click" the bar
+      setTimeout(() => {
+        bar.classList.add('active');
+        pointer.style.display = 'none';
+        cursor.style.display = 'block';
+        input.placeholder = '';
+
+        // Phase 3: type the query
+        let i = 0;
+        const speed = 65 + Math.random() * 20;
+        function typeChar() {
+          if (i < query.length) {
+            input.value += query[i];
+            i++;
+            setTimeout(typeChar, speed + (Math.random() - 0.5) * 40);
+          } else {
+            // Phase 4: show the snark
+            cursor.style.display = 'none';
+            setTimeout(() => {
+              snark.style.opacity = '1';
+              setTimeout(() => {
+                subsnark.style.opacity = '1';
+                launchConfetti();
+                // Phase 5: countdown & redirect to Glean
+                let countdown = 3;
+                const redirectMsg = document.getElementById('redirect-msg');
+                redirectMsg.style.color = '#888';
+                redirectMsg.textContent = `Redirecting to Glean in ${countdown}...`;
+                const tick = setInterval(() => {
+                  countdown--;
+                  if (countdown > 0) {
+                    redirectMsg.textContent = `Redirecting to Glean in ${countdown}...`;
+                  } else {
+                    clearInterval(tick);
+                    redirectMsg.textContent = 'Redirecting now...';
+                    window.location.href = GLEAN_BASE_URL + '?qe=' + encodeURIComponent(GLEAN_BE) + '&q=' + encodeURIComponent(query);
+                  }
+                }, 1000);
+              }, 800);
+            }, 1000);
+          }
+        }
+        setTimeout(typeChar, 400);
+      }, 300);
+    }
+  }
+
+  requestAnimationFrame(animateMouse);
+}
+
+// ---- Confetti ----
+function launchConfetti() {
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#6c5ce7', '#a29bfe', '#fd79a8', '#00b894', '#fdcb6e', '#e17055', '#74b9ff'];
+  const pieces = [];
+
+  for (let i = 0; i < 150; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5,
+      h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vy: Math.random() * 3 + 2,
+      vx: (Math.random() - 0.5) * 2,
+      rot: Math.random() * 360,
+      rv: (Math.random() - 0.5) * 10,
+      opacity: 1,
+    });
+  }
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    pieces.forEach(p => {
+      if (p.opacity <= 0) return;
+      alive = true;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rot * Math.PI) / 180);
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.rv;
+      p.vy += 0.04;
+      if (p.y > canvas.height) p.opacity -= 0.02;
+    });
+    frame++;
+    if (alive && frame < 300) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
+
+// ---- Init ----
+const params = new URLSearchParams(location.search);
+const q = params.get('q');
+if (q) {
+  startPlayback(q);
+}
+
+// Enter key support
+document.getElementById('query-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') generateLink();
+});
+</script>
+
+</body>
+</html>
